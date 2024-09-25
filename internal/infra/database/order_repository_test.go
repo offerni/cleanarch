@@ -36,7 +36,7 @@ func (suite *OrderRepositoryTestSuite) TestGivenAnOrder_WhenSave_ThenShouldSaveO
 	suite.NoError(err)
 	suite.NoError(order.CalculateFinalPrice())
 	repo := NewOrderRepository(suite.Db)
-	err = repo.Save(order)
+	_, err = repo.Save(order)
 	suite.NoError(err)
 
 	var orderResult entity.Order

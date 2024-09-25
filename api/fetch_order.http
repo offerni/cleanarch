@@ -1,4 +1,4 @@
-GET http://localhost:8000/orders/c HTTP/1.1
+GET http://localhost:8000/orders/9468eef6-b7d0-4244-9e62-0c3d93f2748a HTTP/1.1
 Host: localhost:8000
 Content-Type: application/json
 
