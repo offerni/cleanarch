@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 
@@ -29,11 +30,33 @@ func main() {
 		panic(err)
 	}
 
-	db, err := sql.Open(configs.DBDriver, fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", configs.DBUser, configs.DBPassword, configs.DBHost, configs.DBPort, configs.DBName))
+	db, err := sql.Open(configs.DBDriver, fmt.Sprintf("%s:%s@tcp(%s:%s)/", configs.DBUser, configs.DBPassword, configs.DBHost, configs.DBPort))
 	if err != nil {
-		panic(err)
+		log.Panic("Failed to connect to MySQL:", err)
 	}
 	defer db.Close()
+
+	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS " + configs.DBName)
+	if err != nil {
+		log.Panic("Failed to create database:", err)
+	}
+
+	db, err = sql.Open(configs.DBDriver, fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", configs.DBUser, configs.DBPassword, configs.DBHost, configs.DBPort, configs.DBName))
+	if err != nil {
+		log.Panic("Failed to reconnect to MySQL with the database:", err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS orders (
+		id VARCHAR(50) PRIMARY KEY,
+		price DECIMAL(10, 2),
+		tax DECIMAL(10, 2),
+		final_price DECIMAL(10, 2),
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	)`)
+	if err != nil {
+		log.Panic("Failed to create table:", err)
+	}
 
 	rabbitMQChannel := getRabbitMQChannel()
 
@@ -46,7 +69,9 @@ func main() {
 
 	webserver := webserver.NewWebServer(configs.WebServerPort)
 	webOrderHandler := NewWebOrderHandler(db, eventDispatcher)
-	webserver.AddHandler("/order", webOrderHandler.Create)
+
+	webserver.AddHandler(http.MethodGet, "/orders/{id}", webOrderHandler.Fetch)
+	webserver.AddHandler(http.MethodPost, "/orders", webOrderHandler.Create)
 	fmt.Println("Starting web server on port", configs.WebServerPort)
 	go webserver.Start()
 
