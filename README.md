@@ -35,7 +35,7 @@ call ListOrders;
 
 ## GraphQL
 
-open localhost:8080/playground and run the following query:
+open `localhost:8080/playground` and run the following query:
 
 ```
 query {
