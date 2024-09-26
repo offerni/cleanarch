@@ -16,7 +16,7 @@ func (h *WebOrderHandler) Fetch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fetchOrder := usecase.NewFetchOrderUseCase(h.OrderRepository, h.OrderCreatedEvent, h.EventDispatcher)
+	fetchOrder := usecase.NewFetchOrderUseCase(h.OrderRepository)
 	output, err := fetchOrder.Execute(usecase.FetchOrderInputDTO{ID: id})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
