@@ -15,6 +15,23 @@ message CreateOrderResponse {
   float final_price = 4;
 }
 
+message FetchOrderResponse {
+  string id = 1;
+  float price = 2;
+  float tax = 3;
+  float final_price = 4;
+}
+
+message ListOrdersRequest {
+  // nothing here, in a real scenario, we have at least account_id
+}
+
+message ListOrdersResponse {
+  repeated FetchOrderResponse data = 1;
+}
+
+
 service OrderService {
   rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
 }
